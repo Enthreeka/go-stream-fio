@@ -25,11 +25,12 @@ package entity
 //}
 
 type Data struct {
-	Total int      `json:"total"`
-	Data  []Person `json:"data"`
+	Total int    `json:"total"`
+	Data  []User `json:"data"`
 }
 
-type Person struct {
+type User struct {
+	ID        string `json:"id"`
 	Firstname string `json:"firstname"`
 	Lastname  string `json:"lastname"`
 
