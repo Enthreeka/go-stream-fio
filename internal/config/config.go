@@ -1,0 +1,49 @@
+package config
+
+import (
+	"encoding/json"
+	"os"
+)
+
+type (
+	Config struct {
+		Postgres   Postgres   `json:"postgres"`
+		Redis      Redis      `json:"redis"`
+		HTTPServer HTTPServer `json:"http_server"`
+	}
+
+	Postgres struct {
+		URL string `json:"url"`
+	}
+
+	Redis struct {
+		Password     string `json:"password"`
+		Host         string `json:"host"`
+		Db           int    `json:"db"`
+		MinIdleConns int    `json:"min_idle_conns"`
+	}
+
+	HTTPServer struct {
+		Hostname   string `json:"hostname"`
+		Port       string `json:"port"`
+		TypeServer string `json:"type_server"`
+	}
+)
+
+func New(path string) (*Config, error) {
+
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+
+	defer file.Close()
+
+	decoder := json.NewDecoder(file)
+	config := &Config{}
+	if err := decoder.Decode(config); err != nil {
+		return nil, err
+	}
+
+	return config, nil
+}
