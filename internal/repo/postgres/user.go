@@ -22,17 +22,17 @@ func (u userRepoPG) Create(ctx context.Context, user *entity.User) error {
 	panic("implement me")
 }
 
-func (u userRepoPG) GetByID(ctx context.Context, id int) (*entity.User, error) {
+func (u userRepoPG) GetByID(ctx context.Context, id string) (*entity.User, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (u userRepoPG) DeleteByID(ctx context.Context, id int) error {
+func (u userRepoPG) DeleteByID(ctx context.Context, id string) error {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (u userRepoPG) UpdateByID(ctx context.Context, id int) error {
+func (u userRepoPG) UpdateByID(ctx context.Context, id string) error {
 	//TODO implement me
 	panic("implement me")
 }

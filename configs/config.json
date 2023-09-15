@@ -1,0 +1,24 @@
+{
+
+  "http_server": {
+    "hostname":"localhost",
+    "port":"8080",
+    "type_server":"port"
+  },
+
+  "postgres": {
+    "url": "postgres://postgres:1234@localhost:5432/fio"
+  },
+
+  "redis":{
+    "password":"",
+    "host":":6379",
+    "db": 0,
+    "min_idle_conns": 5
+  },
+
+  "kafka": {
+    "topic": ""
+  }
+
+}

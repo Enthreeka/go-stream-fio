@@ -1,4 +1,4 @@
-CREATE TYPE gender as enum ('male','female');
+CREATE TYPE gen as enum ('male','female');
 
 CREATE TABLE IF NOT EXISTS person(
     id int generated always as identity,
@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS person(
 CREATE TABLE IF NOT EXISTS gender(
     id int generated always as identity,
     person_id int,
-    gender gender,
+    gender gen,
     probability float,
     primary key (id),
     foreign key (person_id)

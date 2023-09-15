@@ -10,6 +10,11 @@ type (
 		Postgres   Postgres   `json:"postgres"`
 		Redis      Redis      `json:"redis"`
 		HTTPServer HTTPServer `json:"http_server"`
+		Kafka      Kafka      `json:"kafka"`
+	}
+
+	Kafka struct {
+		Topic string `json:"topic"`
 	}
 
 	Postgres struct {
