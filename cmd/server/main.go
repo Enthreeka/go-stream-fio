@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/NASandGAP/go-stream-fio/internal/config"
-	"github.com/NASandGAP/go-stream-fio/internal/server"
-	"github.com/NASandGAP/go-stream-fio/pkg/logger"
+	"github.com/Enthreeka/go-stream-fio/internal/config"
+	"github.com/Enthreeka/go-stream-fio/internal/server"
+	"github.com/Enthreeka/go-stream-fio/pkg/logger"
 )
 
 func main() {

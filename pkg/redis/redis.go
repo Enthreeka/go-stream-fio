@@ -2,7 +2,7 @@ package redis
 
 import (
 	"context"
-	"github.com/NASandGAP/go-stream-fio/internal/config"
+	"github.com/Enthreeka/go-stream-fio/internal/config"
 	"github.com/redis/go-redis/v9"
 )
 

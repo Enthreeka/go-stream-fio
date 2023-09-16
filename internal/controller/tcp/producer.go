@@ -2,8 +2,8 @@ package tcp
 
 import (
 	"context"
-	kafkaClient "github.com/NASandGAP/go-stream-fio/pkg/kafka"
-	"github.com/NASandGAP/go-stream-fio/pkg/logger"
+	kafkaClient "github.com/Enthreeka/go-stream-fio/pkg/kafka"
+	"github.com/Enthreeka/go-stream-fio/pkg/logger"
 	"github.com/segmentio/kafka-go"
 )
 

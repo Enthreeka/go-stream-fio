@@ -2,13 +2,15 @@ package server
 
 import (
 	"context"
-	"fmt"
-	"github.com/NASandGAP/go-stream-fio/internal/config"
-	"github.com/NASandGAP/go-stream-fio/pkg/faker"
-	kafkaClient "github.com/NASandGAP/go-stream-fio/pkg/kafka"
-	"github.com/NASandGAP/go-stream-fio/pkg/logger"
-	"github.com/NASandGAP/go-stream-fio/pkg/postgres"
-	"github.com/NASandGAP/go-stream-fio/pkg/redis"
+	"github.com/Enthreeka/go-stream-fio/internal/config"
+	"github.com/Enthreeka/go-stream-fio/internal/controller/tcp"
+	postgres2 "github.com/Enthreeka/go-stream-fio/internal/repo/postgres"
+	redis2 "github.com/Enthreeka/go-stream-fio/internal/repo/redis"
+	"github.com/Enthreeka/go-stream-fio/internal/usecase"
+	kafkaClient "github.com/Enthreeka/go-stream-fio/pkg/kafka"
+	"github.com/Enthreeka/go-stream-fio/pkg/logger"
+	"github.com/Enthreeka/go-stream-fio/pkg/postgres"
+	"github.com/Enthreeka/go-stream-fio/pkg/redis"
 )
 
 func Run(cfg *config.Config, log *logger.Logger) error {
@@ -26,39 +28,27 @@ func Run(cfg *config.Config, log *logger.Logger) error {
 	}
 	defer rds.Close()
 
-	// Get fake data with users from https://fakerapi.it/en
-	// You can set a quantity to search for people
-	_, err = faker.FakeUsers(15)
+	conn, err := kafkaClient.New(context.Background())
 	if err != nil {
-		log.Error("failed to get fake data from API: %v", err)
+		log.Fatal("failed to dial leader: %v", err)
 	}
 
-	//err = w.WriteMessages(ctx, kafka.Message{
-	//	Key:   []byte("Key-A"),
-	//	Value: []byte("Hello World!"),
-	//})
-	//if err != nil {
-	//	log.Error("%v", err)
-	//}
-	//
-	//if err := w.Close(); err != nil {
-	//	log.Fatal("failed to close writer:", err)
-	//}
-	//
-	r := kafkaClient.NewKafkaReader()
-	r.SetOffset(42)
+	broker := conn.Broker()
+	log.Info(broker.Host, broker.ID, broker.Port, broker.Rack)
 
-	for {
-		m, err := r.ReadMessage(context.Background())
-		if err != nil {
-			break
-		}
-		fmt.Printf("message at topic/partition/offset %v/%v/%v: %s = %s\n", m.Topic, m.Partition, m.Offset, string(m.Key), string(m.Value))
+	userRepoPG := postgres2.NewUserRepoPG(psql)
+	userRepoRedis := redis2.NewUserRepoRedis(rds)
+
+	userUsecase := usecase.NewUserUsecase(userRepoPG, userRepoRedis, log)
+
+	userConsumer := tcp.NewConsumerKafka(userUsecase, log)
+
+	err = userConsumer.Read(context.Background())
+	if err != nil {
+		log.Error("%v", err)
 	}
 
-	if err := r.Close(); err != nil {
-		log.Fatal("failed to close reader:", err)
-	}
+	defer userConsumer.Close()
 
 	return nil
 }

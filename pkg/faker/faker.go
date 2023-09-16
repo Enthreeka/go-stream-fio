@@ -2,7 +2,7 @@ package faker
 
 import (
 	"encoding/json"
-	"github.com/NASandGAP/go-stream-fio/internal/entity"
+	"github.com/Enthreeka/go-stream-fio/internal/entity"
 	"net/http"
 	"strconv"
 )
@@ -10,7 +10,7 @@ import (
 func FakeUsers(quantity int) (*entity.Data, error) {
 	quantityStr := strconv.Itoa(quantity)
 
-	url := `https://fakerapi.it/api/v1/persons?_quantity=` + quantityStr
+	url := `https://fakerapi.it/api/v1/persons?_locale=ru_RU&_quantity=` + quantityStr
 
 	resp, err := http.Get(url)
 	if err != nil {

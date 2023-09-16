@@ -2,7 +2,7 @@ package repo
 
 import (
 	"context"
-	"github.com/NASandGAP/go-stream-fio/internal/entity"
+	"github.com/Enthreeka/go-stream-fio/internal/entity"
 )
 
 type User interface {

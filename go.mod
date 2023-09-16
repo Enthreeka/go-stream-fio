@@ -1,4 +1,4 @@
-module github.com/NASandGAP/go-stream-fio
+module github.com/Enthreeka/go-stream-fio
 
 go 1.20
 
