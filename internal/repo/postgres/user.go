@@ -5,6 +5,7 @@ import (
 	"github.com/Enthreeka/go-stream-fio/internal/entity"
 	"github.com/Enthreeka/go-stream-fio/internal/repo"
 	"github.com/Enthreeka/go-stream-fio/pkg/postgres"
+	"github.com/jackc/pgx/v5"
 )
 
 type userRepoPG struct {
@@ -18,40 +19,58 @@ func NewUserRepoPG(postgres *postgres.Postgres) repo.User {
 }
 
 func (u *userRepoPG) Create(ctx context.Context, user *entity.User) error {
-	//queryPerson := `INSERT INTO person (firstname,lastname,age) VALUES ($1,$2,$3) RETURNING id`
-	//queryGender := `INSERT INTO gender (person_id,gender,probability) VALUES ($1,$2,$3)`
-	//queryAddress := `INSERT INTO address (person_id,country_code,probability) VALUES ($1,$2,$3)`
-	//
-	//tx, err := u.Pool.BeginTx(ctx, pgx.TxOptions{})
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//defer func() {
-	//	if err != nil {
-	//		tx.Rollback(context.TODO())
-	//	} else {
-	//		tx.Commit(context.TODO())
-	//	}
-	//}()
+	queryPerson := `INSERT INTO person (id,firstname,lastname,age) VALUES ($1,$2,$3,$4)`
+	queryGender := `INSERT INTO gender (person_id,gender,probability) VALUES ($1,$2,$3)`
+	queryAddress := `INSERT INTO address (person_id,country_code,probability) VALUES ($1,$2,$3)`
 
-	//var personID int
-	//err = tx.QueryRow(ctx, queryPerson, user.Firstname, user.Lastname, user.Birthday).Scan(&personID)
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//_, err = tx.Exec(ctx, queryGender, personID, user.Gender, user.Probability)
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//_, err = tx.Exec(ctx, queryAddress, personID, user.Address.CountryCode, user.Address.Probability)
-	//if err != nil {
-	//	return err
-	//}
+	tx, err := u.Pool.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		if err != nil {
+			tx.Rollback(context.TODO())
+		} else {
+			tx.Commit(context.TODO())
+		}
+	}()
+
+	_, err = tx.Exec(ctx, queryPerson, user.ID, user.Firstname, user.Lastname, user.Age[0].Age)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(ctx, queryGender, user.ID, user.Gender[0].Gender, user.Gender[0].Probability)
+	if err != nil {
+		return err
+	}
+
+	for _, address := range user.Address {
+		_, err = tx.Exec(ctx, queryAddress, user.ID, address.CountryCode, address.Probability)
+		if err != nil {
+			return err
+		}
+	}
 
 	return nil
+}
+
+func (u *userRepoPG) GetALL(ctx context.Context) ([]entity.User, error) {
+	//query := `SELECT (person.id,
+	//    person.firstname,
+	//    person.lastname,
+	//    person.age,
+	//    gender.gender,
+	//    gender.probability,
+	//    address.country_code,
+	//    address.probability)
+	//FROM person
+	//JOIN  address on person.id = address.person_id
+	//JOIN  gender  on person.id = gender.person_id`
+
+	//TODO implement me
+	panic("implement me")
 }
 
 func (u *userRepoPG) GetByID(ctx context.Context, id string) (*entity.User, error) {
@@ -60,8 +79,10 @@ func (u *userRepoPG) GetByID(ctx context.Context, id string) (*entity.User, erro
 }
 
 func (u *userRepoPG) DeleteByID(ctx context.Context, id string) error {
-	//TODO implement me
-	panic("implement me")
+	query := `DELETE FROM person WHERE id = $1`
+
+	_, err := u.Pool.Exec(ctx, query, id)
+	return err
 }
 
 func (u *userRepoPG) UpdateByID(ctx context.Context, id string) error {

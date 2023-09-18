@@ -8,7 +8,6 @@ import (
 	"github.com/Enthreeka/go-stream-fio/internal/usecase"
 	kafkaClient "github.com/Enthreeka/go-stream-fio/pkg/kafka"
 	"github.com/Enthreeka/go-stream-fio/pkg/logger"
-	"github.com/Enthreeka/go-stream-fio/pkg/validation"
 	"github.com/segmentio/kafka-go"
 )
 
@@ -33,7 +32,6 @@ func NewConsumerKafka(userUsecase usecase.User, log *logger.Logger) Consumer {
 }
 
 func (c *consumerKafka) Read(ctx context.Context) error {
-
 	for {
 		msg, err := c.r.ReadMessage(ctx)
 		if err != nil {
@@ -43,19 +41,24 @@ func (c *consumerKafka) Read(ctx context.Context) error {
 			break
 		}
 
-		fio := &dto.FIO{}
+		fio := &dto.FioRequest{}
 
 		err = json.Unmarshal(msg.Value, fio)
 		if err != nil {
 			c.log.Error("failed to encode dto.FIO: %v", err)
+			continue
 		}
 
-		if !validation.IsRequiredField(fio) {
-			return apperror.ErrFIOFailed
+		c.log.Info("get fio: [%v]", fio)
+
+		if !dto.IsRequiredField(fio) {
+			c.log.Error("%v", apperror.ErrFIOFailed)
+			continue
 		}
 
-		if !validation.IsNumberInFIO(fio) {
-			return apperror.ErrFIOFailed
+		if !dto.IsNumberInFIO(fio) {
+			c.log.Error("%v", apperror.ErrFIOFailed)
+			continue
 		}
 
 		err = c.userUsecase.CreateUser(context.Background(), fio)

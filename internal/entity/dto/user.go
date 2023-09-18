@@ -1,11 +1,18 @@
-package validation
+package dto
 
-import (
-	"github.com/Enthreeka/go-stream-fio/internal/entity/dto"
-	"strconv"
-)
+import "strconv"
 
-func IsNumberInFIO(fio *dto.FIO) bool {
+type FioRequest struct {
+	Name       string `json:"name"`
+	Surname    string `json:"surname"`
+	Patronymic string `json:"patronymic,omitempty"`
+}
+
+type IdUserRequest struct {
+	ID string `json:"id"`
+}
+
+func IsNumberInFIO(fio *FioRequest) bool {
 	if _, err := strconv.Atoi(fio.Name); err == nil {
 		return false
 	}
@@ -21,7 +28,7 @@ func IsNumberInFIO(fio *dto.FIO) bool {
 	return true
 }
 
-func IsRequiredField(fio *dto.FIO) bool {
+func IsRequiredField(fio *FioRequest) bool {
 	if fio.Name == "" {
 		return false
 	}

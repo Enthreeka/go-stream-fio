@@ -12,11 +12,16 @@ type User struct {
 }
 
 type Gender struct {
-	Gender      string `json:"gender"`
-	Probability string `json:"probability"`
+	Gender      string  `json:"gender"`
+	Probability float32 `json:"probability"`
 }
 
 type Age struct {
-	Age         int    `json:"age"`
-	Probability string `json:"probability"`
+	Age         int     `json:"age"`
+	Probability float32 `json:"probability"`
+}
+
+type Address struct {
+	CountryCode string `json:"county_code"`
+	Probability string `json:"probability,omitempty"`
 }

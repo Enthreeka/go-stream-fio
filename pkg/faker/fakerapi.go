@@ -2,12 +2,13 @@ package faker
 
 import (
 	"encoding/json"
-	"github.com/Enthreeka/go-stream-fio/internal/entity"
 	"net/http"
 	"strconv"
 )
 
-func FakeUsers(quantity int) (*entity.Data, error) {
+// FakeUsersAPI Get fake data with users from https://fakerapi.it/en
+// You can set a quantity to search a people
+func FakeUsersAPI(quantity int) (*Data, error) {
 	quantityStr := strconv.Itoa(quantity)
 
 	url := `https://fakerapi.it/api/v1/persons?_locale=ru_RU&_quantity=` + quantityStr
@@ -21,7 +22,7 @@ func FakeUsers(quantity int) (*entity.Data, error) {
 
 	decoder := json.NewDecoder(resp.Body)
 
-	var fakeUsersResponse entity.Data
+	var fakeUsersResponse Data
 
 	err = decoder.Decode(&fakeUsersResponse)
 	if err != nil {

@@ -27,7 +27,7 @@ func main() {
 
 	app.Get("/", ph.MessageHandler)
 
-	log.Info("Starting http kafka server: localhost:8080")
+	log.Info("Starting http kafka server: localhost:8081")
 
 	defer producer.Close()
 

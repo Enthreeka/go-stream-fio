@@ -1,4 +1,4 @@
-package entity
+package faker
 
 type Data struct {
 	Total int        `json:"total"`
@@ -12,12 +12,11 @@ type FakeUser struct {
 
 	Birthday string `json:"birthday"`
 	Gender   string `json:"gender"`
-	//Probability float32 `json:"-"`
 
 	Address Address `json:"address"`
 }
 
 type Address struct {
 	CountryCode string `json:"county_code"`
-	Probability string `json:"probability"`
+	Probability string `json:"probability,omitempty"`
 }

@@ -11,7 +11,8 @@ type appError struct {
 }
 
 var (
-	ErrFIOFailed = NewAppError(errors.New("error_in_fio"), "required fields are written incorrectly")
+	ErrFIOFailed       = NewAppError(errors.New("error_in_fio"), "required fields are written incorrectly")
+	ErrNoFoundFakeUser = NewAppError(errors.New("list_is_empty"), "no one was found with the specified fio")
 )
 
 func NewAppError(Err error, Message string) *appError {

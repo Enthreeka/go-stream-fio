@@ -19,7 +19,7 @@ func NewUserRepoRedis(redis *redis.Redis) repo.User {
 	}
 }
 
-func (u userRepoRedis) Create(ctx context.Context, user *entity.User) error {
+func (u *userRepoRedis) Create(ctx context.Context, user *entity.User) error {
 	bytesUser, err := json.Marshal(user)
 	if err != nil {
 		return err
@@ -33,7 +33,7 @@ func (u userRepoRedis) Create(ctx context.Context, user *entity.User) error {
 	return nil
 }
 
-func (u userRepoRedis) GetByID(ctx context.Context, id string) (*entity.User, error) {
+func (u *userRepoRedis) GetByID(ctx context.Context, id string) (*entity.User, error) {
 	user := new(entity.User)
 
 	userBytes, err := u.Rds.Get(ctx, id).Bytes()
@@ -49,7 +49,32 @@ func (u userRepoRedis) GetByID(ctx context.Context, id string) (*entity.User, er
 	return user, nil
 }
 
-func (u userRepoRedis) DeleteByID(ctx context.Context, id string) error {
+func (u *userRepoRedis) GetALL(ctx context.Context) ([]entity.User, error) {
+	keys, _, err := u.Rds.Scan(ctx, 0, "*", 0).Result()
+	if err != nil {
+		return nil, err
+	}
+
+	users := make([]entity.User, 0)
+	for _, key := range keys {
+		var user entity.User
+		userBytes, err := u.Rds.Get(ctx, key).Bytes()
+		if err != nil {
+			return nil, err
+		}
+
+		err = json.Unmarshal(userBytes, &user)
+		if err != nil {
+			return nil, err
+		}
+
+		users = append(users, user)
+	}
+
+	return users, nil
+}
+
+func (u *userRepoRedis) DeleteByID(ctx context.Context, id string) error {
 	err := u.Rds.Del(ctx, id).Err()
 	if err != nil {
 		return err
@@ -58,7 +83,7 @@ func (u userRepoRedis) DeleteByID(ctx context.Context, id string) error {
 	return nil
 }
 
-func (u userRepoRedis) UpdateByID(ctx context.Context, id string) error {
+func (u *userRepoRedis) UpdateByID(ctx context.Context, id string) error {
 	//TODO implement me
 	panic("implement me")
 }

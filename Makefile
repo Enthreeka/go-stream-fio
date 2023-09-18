@@ -4,6 +4,8 @@
 server:
 	go run cmd/server/main.go
 
+producer:
+	go run cmd/server/producer/producer.go
 
 ####### Docker compose #######
 

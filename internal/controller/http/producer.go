@@ -25,7 +25,8 @@ func NewProducerHandler(producer tcp.Producer, log *logger.Logger) *producerHand
 }
 
 func (p *producerHandler) MessageHandler(c *fiber.Ctx) error {
-	fio := dto.FIO{}
+
+	fio := dto.FioRequest{}
 	err := c.BodyParser(&fio)
 	if err != nil {
 		p.log.Error("failed to parse request body: %v", err)
@@ -42,7 +43,7 @@ func (p *producerHandler) MessageHandler(c *fiber.Ctx) error {
 		p.log.Error("failed to marshal: %v", err)
 	}
 
-	p.log.Info("get message: [%v]", fio)
+	p.log.Info("send message: [%v]", fio)
 	err = p.producer.Publish(ctx, kafka.Message{
 		Key:   []byte(fio.Name),
 		Value: fioByte,

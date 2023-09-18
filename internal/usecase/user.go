@@ -2,13 +2,14 @@ package usecase
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
+	"github.com/Enthreeka/go-stream-fio/internal/apperror"
 	"github.com/Enthreeka/go-stream-fio/internal/entity"
 	"github.com/Enthreeka/go-stream-fio/internal/entity/dto"
 	"github.com/Enthreeka/go-stream-fio/internal/repo"
 	"github.com/Enthreeka/go-stream-fio/pkg/faker"
 	"github.com/Enthreeka/go-stream-fio/pkg/logger"
+	"github.com/google/uuid"
 	"time"
 )
 
@@ -27,27 +28,71 @@ func NewUserUsecase(userRepoPG repo.User, userRepoRedis repo.User, log *logger.L
 	}
 }
 
-func (u *userUsecase) CreateUser(ctx context.Context, fio *dto.FIO) error {
-	user := u.enrichmentFIO(fio)
+func (u *userUsecase) CreateUser(ctx context.Context, fio *dto.FioRequest) error {
+	user, err := u.enrichmentFIO(fio)
+	if err != nil {
+		if err == apperror.ErrNoFoundFakeUser {
+			return apperror.ErrNoFoundFakeUser
+		}
+		return err
+	}
 
-	str, _ := json.Marshal(user)
+	user.ID = uuid.New().String()
 
-	u.log.Info("%v", string(str))
+	err = u.userRepoPG.Create(ctx, user)
+	if err != nil {
+		return err
+	}
 
-	//err := u.userRepoPG.Create(ctx, user)
-	//if err != nil {
-	//	return err
-	//}
+	err = u.userRepoRedis.Create(ctx, user)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
 
-func (u *userUsecase) enrichmentFIO(fio *dto.FIO) *entity.User {
-	// Get fake data with users from https://fakerapi.it/en
-	// You can set a quantity to search a people
-	fakeUsers, err := faker.FakeUsers(1000)
+func (u *userUsecase) FilteredUser(ctx context.Context, name string) ([]entity.User, error) {
+	u.log.Info("starting filtered users")
+
+	users, err := u.userRepoRedis.GetALL(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	filteredUsers := make([]entity.User, 0)
+	for _, user := range users {
+		if user.Firstname == name {
+			filteredUsers = append(filteredUsers, user)
+		}
+	}
+
+	u.log.Info("filtered users completed successfully")
+	return filteredUsers, nil
+}
+
+func (u *userUsecase) DeleteUser(ctx context.Context, id string) error {
+	u.log.Info("start deleting a user")
+
+	err := u.userRepoPG.DeleteByID(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	err = u.userRepoRedis.DeleteByID(ctx, id)
+	if err != nil {
+		return err
+	}
+	u.log.Info("deleting a user with [%s] has been successfully completed", id)
+
+	return nil
+}
+
+func (u *userUsecase) enrichmentFIO(fio *dto.FioRequest) (*entity.User, error) {
+	fakeUsers, err := faker.NewFaker()
 	if err != nil {
 		u.log.Error("failed to get fake data from API: %v", err)
+		return nil, err
 	}
 
 	u.log.Info("get total - [%d] fake users", fakeUsers.Total)
@@ -71,8 +116,17 @@ func (u *userUsecase) enrichmentFIO(fio *dto.FIO) *entity.User {
 			age := time.Now().Year() - date.Year()
 			ages = append(ages, age)
 			genders = append(genders, el.Gender)
-			addresses = append(addresses, el.Address)
+
+			address := entity.Address{
+				CountryCode: el.Address.CountryCode,
+				Probability: el.Address.Probability,
+			}
+			addresses = append(addresses, address)
 		}
+	}
+
+	if len(ages) == 0 {
+		return nil, apperror.ErrNoFoundFakeUser
 	}
 
 	addressesMap := make(map[string]int)
@@ -109,7 +163,7 @@ func (u *userUsecase) enrichmentFIO(fio *dto.FIO) *entity.User {
 	for key, value := range addressesMap {
 		var a entity.Address
 		probability = float32(value) / nameCount
-		probabilityStr := fmt.Sprintf("%.2f", probability)
+		probabilityStr := fmt.Sprintf("%.3f", probability)
 
 		a.CountryCode = key
 		a.Probability = probabilityStr
@@ -121,10 +175,9 @@ func (u *userUsecase) enrichmentFIO(fio *dto.FIO) *entity.User {
 	for key, value := range agesMap {
 		var a entity.Age
 		probability = float32(value) / nameCount
-		probabilityStr := fmt.Sprintf("%.2f", probability)
 
 		a.Age = key
-		a.Probability = probabilityStr
+		a.Probability = probability
 
 		user.Age = append(user.Age, a)
 	}
@@ -132,10 +185,9 @@ func (u *userUsecase) enrichmentFIO(fio *dto.FIO) *entity.User {
 	for key, value := range gendersMap {
 		var g entity.Gender
 		probability = float32(value) / nameCount
-		probabilityStr := fmt.Sprintf("%.2f", probability)
 
 		g.Gender = key
-		g.Probability = probabilityStr
+		g.Probability = probability
 
 		user.Gender = append(user.Gender, g)
 	}
@@ -143,5 +195,37 @@ func (u *userUsecase) enrichmentFIO(fio *dto.FIO) *entity.User {
 	user.Firstname = fio.Name
 	user.Lastname = fio.Surname
 
-	return user
+	u.highProbability(user)
+
+	return user, nil
+}
+
+func (u *userUsecase) highProbability(user *entity.User) {
+	ageProbability := entity.Age{
+		Probability: user.Age[0].Probability,
+		Age:         user.Age[0].Age,
+	}
+	////probabilityStr := fmt.Sprintf("%.2f", probability)
+	for _, age := range user.Age {
+		if age.Probability > ageProbability.Probability {
+			ageProbability.Age = age.Age
+			ageProbability.Probability = age.Probability
+		}
+	}
+	user.Age = make([]entity.Age, 0, 1)
+	user.Age = append(user.Age, ageProbability)
+
+	genderProbability := entity.Gender{}
+	if len(user.Gender) > 1 {
+		if user.Gender[0].Probability > user.Gender[1].Probability {
+			genderProbability.Gender = user.Gender[0].Gender
+			genderProbability.Probability = user.Gender[0].Probability
+		} else {
+			genderProbability.Gender = user.Gender[1].Gender
+			genderProbability.Probability = user.Gender[1].Probability
+		}
+
+		user.Gender = make([]entity.Gender, 0, 1)
+		user.Gender = append(user.Gender, genderProbability)
+	}
 }

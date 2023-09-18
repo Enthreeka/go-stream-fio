@@ -10,4 +10,5 @@ type User interface {
 	GetByID(ctx context.Context, id string) (*entity.User, error)
 	DeleteByID(ctx context.Context, id string) error
 	UpdateByID(ctx context.Context, id string) error
+	GetALL(ctx context.Context) ([]entity.User, error)
 }
