@@ -1,4 +1,21 @@
+# Сервис для обогащения данных
 
+
+## Используемые библиотеки
+
+[pgx/v5](https://github.com/jackc/pgx) - драйвер и инструмент для PostgreSQL
+
+[fiber](https://github.com/gofiber/fiber) - http движок
+
+[segmentio/kafka-go](https://github.com/segmentio/kafka-go) - инструмент для работы с kafka
+
+[zap](https://github.com/uber-go/zap) - логгер
+
+[go-redis/v9](https://github.com/redis/go-redis) - Redis клиент
+
+[gofakeit/v6](https://github.com/brianvoe/gofakeit) - генерация случайнных данных
+
+[godotenv](https://github.com/joho/godotenv) - загрузка данных с .env
 
 ## Инструкция по запуску
 

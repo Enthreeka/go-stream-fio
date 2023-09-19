@@ -7,11 +7,11 @@ import (
 )
 
 func main() {
-	path := `configs/config.json`
+	//path := `configs/config.json`
 
 	log := logger.New()
 
-	cfg, err := config.New(path)
+	cfg, err := config.New()
 	if err != nil {
 		log.Error("failed to load config: %v", err)
 	}

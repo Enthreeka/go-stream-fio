@@ -1,8 +1,9 @@
 package config
 
 import (
-	"encoding/json"
+	"github.com/joho/godotenv"
 	"os"
+	"strconv"
 )
 
 type (
@@ -35,20 +36,39 @@ type (
 	}
 )
 
-func New(path string) (*Config, error) {
-
-	file, err := os.Open(path)
+func New() (*Config, error) {
+	err := godotenv.Load("configs/server.env")
 	if err != nil {
 		return nil, err
 	}
 
-	defer file.Close()
-
-	decoder := json.NewDecoder(file)
-	config := &Config{}
-	if err := decoder.Decode(config); err != nil {
-		return nil, err
+	config := &Config{
+		Postgres: Postgres{
+			URL: os.Getenv("POSTGRES_URL"),
+		},
+		Redis: Redis{
+			Password:     os.Getenv("REDIS_PASSWORD"),
+			Host:         os.Getenv("REDIS_HOST"),
+			Db:           parseEnvInt(os.Getenv("REDIS_DB")),
+			MinIdleConns: parseEnvInt(os.Getenv("REDIS_MIN_IDLE_CONNS")),
+		},
+		HTTPServer: HTTPServer{
+			Hostname:   os.Getenv("HTTP_HOSTNAME"),
+			Port:       os.Getenv("HTTP_PORT"),
+			TypeServer: os.Getenv("HTTP_TYPE_SERVER"),
+		},
+		Kafka: Kafka{
+			Topic: os.Getenv("KAFKA_TOPIC"),
+		},
 	}
 
 	return config, nil
+}
+
+func parseEnvInt(value string) int {
+	intValue, err := strconv.Atoi(value)
+	if err != nil {
+		return 0
+	}
+	return intValue
 }
