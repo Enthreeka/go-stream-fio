@@ -76,6 +76,16 @@ func (u *userHandler) CreatePersonHandler(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(apperror.NewAppError(err, "Invalid request body"))
 	}
 
+	if !dto.IsRequiredField(&userRequest) {
+		u.log.Error("%v", apperror.ErrFIOFailed)
+		return c.Status(fiber.StatusBadRequest).JSON(apperror.ErrFIOFailed)
+	}
+
+	if !dto.IsNumberInFIO(&userRequest) {
+		u.log.Error("%v", apperror.ErrFIOFailed)
+		return c.Status(fiber.StatusBadRequest).JSON(apperror.ErrFIOFailed)
+	}
+
 	user := &entity.User{
 		Firstname: userRequest.Name,
 		Lastname:  userRequest.Surname,

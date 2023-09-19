@@ -32,40 +32,40 @@ func NewConsumerKafka(userUsecase usecase.User, log *logger.Logger) Consumer {
 }
 
 func (c *consumerKafka) Read(ctx context.Context) error {
-	for {
-		msg, err := c.r.ReadMessage(ctx)
-		if err != nil {
-			return err
-		}
-		if err != nil {
-			break
-		}
-
-		fio := &dto.FioRequest{}
-
-		err = json.Unmarshal(msg.Value, fio)
-		if err != nil {
-			c.log.Error("failed to encode dto.FIO: %v", err)
-			return err
-		}
-
-		c.log.Info("get fio: [%v]", fio)
-
-		if !dto.IsRequiredField(fio) {
-			c.log.Error("%v", apperror.ErrFIOFailed)
-			return apperror.ErrFIOFailed
-		}
-
-		if !dto.IsNumberInFIO(fio) {
-			c.log.Error("%v", apperror.ErrFIOFailed)
-			return apperror.ErrFIOFailed
-		}
-
-		err = c.userUsecase.CreateUser(context.Background(), fio)
-		if err != nil {
-			return err
-		}
+	//for {
+	msg, err := c.r.ReadMessage(ctx)
+	if err != nil {
+		return err
 	}
+	//if err != nil {
+	//	break
+	//}
+
+	fio := &dto.FioRequest{}
+
+	err = json.Unmarshal(msg.Value, fio)
+	if err != nil {
+		c.log.Error("failed to encode dto.FIO: %v", err)
+		return err
+	}
+
+	c.log.Info("get fio: [%v]", fio)
+
+	if !dto.IsRequiredField(fio) {
+		c.log.Error("%v", apperror.ErrFIOFailed)
+		return apperror.ErrFIOFailed
+	}
+
+	if !dto.IsNumberInFIO(fio) {
+		c.log.Error("%v", apperror.ErrFIOFailed)
+		return apperror.ErrFIOFailed
+	}
+
+	err = c.userUsecase.CreateUser(context.Background(), fio)
+	if err != nil {
+		return err
+	}
+	//}
 	return nil
 }
 

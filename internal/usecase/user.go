@@ -10,6 +10,7 @@ import (
 	"github.com/Enthreeka/go-stream-fio/pkg/faker"
 	"github.com/Enthreeka/go-stream-fio/pkg/logger"
 	"github.com/google/uuid"
+	"strconv"
 	"time"
 )
 
@@ -221,17 +222,24 @@ func (u *userUsecase) highProbability(user *entity.User) {
 		Probability: user.Age[0].Probability,
 		Age:         user.Age[0].Age,
 	}
-	////probabilityStr := fmt.Sprintf("%.2f", probability)
+
+	// Find the largest probability
 	for _, age := range user.Age {
 		if age.Probability > ageProbability.Probability {
 			ageProbability.Age = age.Age
 			ageProbability.Probability = age.Probability
 		}
 	}
+	// float32 we bring to the form 0.000
+	probAgeStr := fmt.Sprintf("%.3f", ageProbability.Probability)
+	valueAge, _ := strconv.ParseFloat(probAgeStr, 32)
+	ageProbability.Probability = float32(valueAge)
+
 	user.Age = make([]entity.Age, 0, 1)
 	user.Age = append(user.Age, ageProbability)
 
 	genderProbability := entity.Gender{}
+	// Find the largest probability
 	if len(user.Gender) > 1 {
 		if user.Gender[0].Probability > user.Gender[1].Probability {
 			genderProbability.Gender = user.Gender[0].Gender
@@ -241,7 +249,13 @@ func (u *userUsecase) highProbability(user *entity.User) {
 			genderProbability.Probability = user.Gender[1].Probability
 		}
 
+		// float32 we bring to the form 0.000
+		probGenderStr := fmt.Sprintf("%.3f", genderProbability.Probability)
+		valueGender, _ := strconv.ParseFloat(probGenderStr, 32)
+		genderProbability.Probability = float32(valueGender)
+
 		user.Gender = make([]entity.Gender, 0, 1)
 		user.Gender = append(user.Gender, genderProbability)
 	}
+
 }

@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"context"
-	"fmt"
 	"github.com/Enthreeka/go-stream-fio/internal/entity"
 	"github.com/Enthreeka/go-stream-fio/internal/repo"
 	"github.com/Enthreeka/go-stream-fio/pkg/postgres"
@@ -119,14 +118,7 @@ func (u *userRepoPG) GetALL(ctx context.Context) ([]entity.User, error) {
 		return nil, err
 	}
 
-	fmt.Println(usersMap)
-
 	return nil, nil
-}
-
-func (u *userRepoPG) GetByID(ctx context.Context, id string) (*entity.User, error) {
-	//TODO implement me
-	panic("implement me")
 }
 
 func (u *userRepoPG) DeleteByID(ctx context.Context, id string) error {
@@ -134,6 +126,11 @@ func (u *userRepoPG) DeleteByID(ctx context.Context, id string) error {
 
 	_, err := u.Pool.Exec(ctx, query, id)
 	return err
+}
+
+func (u *userRepoPG) GetByID(ctx context.Context, id string) (*entity.User, error) {
+	//TODO implement me
+	panic("implement me")
 }
 
 func (u *userRepoPG) UpdateByID(ctx context.Context, id string) error {
