@@ -88,6 +88,22 @@ func (u *userUsecase) DeleteUser(ctx context.Context, id string) error {
 	return nil
 }
 
+func (u *userUsecase) CreatePerson(ctx context.Context, user *entity.User) error {
+	user.ID = uuid.New().String()
+
+	err := u.userRepoPG.CreatePerson(ctx, user)
+	if err != nil {
+		return err
+	}
+
+	err = u.userRepoRedis.CreatePerson(ctx, user)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (u *userUsecase) enrichmentFIO(fio *dto.FioRequest) (*entity.User, error) {
 	fakeUsers, err := faker.NewFaker()
 	if err != nil {
@@ -105,7 +121,7 @@ func (u *userUsecase) enrichmentFIO(fio *dto.FioRequest) (*entity.User, error) {
 	genders := make([]string, 0)
 	var probability float32
 	for _, el := range fakeUsers.Data {
-		if fio.Name == el.Firstname || fio.Surname == el.Lastname {
+		if fio.Name == el.Firstname && fio.Surname == el.Lastname {
 			nameCount++
 
 			date, err := time.Parse("2006-01-02", el.Birthday)

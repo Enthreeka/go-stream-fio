@@ -19,7 +19,6 @@ import (
 )
 
 func Run(cfg *config.Config, log *logger.Logger) error {
-
 	// Connect to PostgreSQL
 	psql, err := postgres.New(context.Background(), cfg.Postgres.URL)
 	if err != nil {
@@ -47,6 +46,8 @@ func Run(cfg *config.Config, log *logger.Logger) error {
 	userRepoPG := postgres2.NewUserRepoPG(psql)
 	userRepoRedis := redis2.NewUserRepoRedis(rds)
 
+	//_, err = userRepoPG.GetALL(context.Background())
+
 	userUsecase := usecase.NewUserUsecase(userRepoPG, userRepoRedis, log)
 
 	userConsumer := tcp.NewConsumerKafka(userUsecase, log)
@@ -57,6 +58,7 @@ func Run(cfg *config.Config, log *logger.Logger) error {
 
 	app.Get("/users", userHandler.UserHandler)
 	app.Delete("/:id", userHandler.DeleteUserHandler)
+	app.Post("/user", userHandler.CreatePersonHandler)
 
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -67,9 +69,8 @@ func Run(cfg *config.Config, log *logger.Logger) error {
 			err = userConsumer.Read(context.Background())
 			if err != nil {
 				log.Error("%v", err)
-
-				time.Sleep(1 * time.Second)
 			}
+			time.Sleep(1 * time.Second)
 		}
 	}()
 

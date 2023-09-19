@@ -1,11 +1,13 @@
 package dto
 
-import "strconv"
+import (
+	"strconv"
+)
 
 type FioRequest struct {
 	Name       string `json:"name"`
 	Surname    string `json:"surname"`
-	Patronymic string `json:"patronymic,omitempty"`
+	Patronymic string `json:"-"`
 }
 
 type IdUserRequest struct {
@@ -13,15 +15,11 @@ type IdUserRequest struct {
 }
 
 func IsNumberInFIO(fio *FioRequest) bool {
-	if _, err := strconv.Atoi(fio.Name); err == nil {
+	if _, err := strconv.ParseInt(fio.Name, 10, 64); err == nil {
 		return false
 	}
 
-	if _, err := strconv.Atoi(fio.Surname); err == nil {
-		return false
-	}
-
-	if _, err := strconv.Atoi(fio.Patronymic); err == nil {
+	if _, err := strconv.ParseInt(fio.Surname, 10, 64); err == nil {
 		return false
 	}
 

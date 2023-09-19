@@ -25,6 +25,7 @@ func NewProducerHandler(producer tcp.Producer, log *logger.Logger) *producerHand
 }
 
 func (p *producerHandler) MessageHandler(c *fiber.Ctx) error {
+	p.log.Info("start message handler in producer")
 
 	fio := dto.FioRequest{}
 	err := c.BodyParser(&fio)
@@ -43,15 +44,17 @@ func (p *producerHandler) MessageHandler(c *fiber.Ctx) error {
 		p.log.Error("failed to marshal: %v", err)
 	}
 
-	p.log.Info("send message: [%v]", fio)
 	err = p.producer.Publish(ctx, kafka.Message{
-		Key:   []byte(fio.Name),
+		Key:   []byte("FIO"),
 		Value: fioByte,
 	})
 	if err != nil {
 		p.log.Error("failed to send msg: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(err)
 	}
+	p.log.Info("send message: [Key - 'FIO'][Value - %v]", fio)
 
+	p.log.Info("message handler completed successfully")
 	return c.Status(fiber.StatusOK).JSON(map[string]interface{}{
 		"FIO":     fio,
 		"message": "sends",

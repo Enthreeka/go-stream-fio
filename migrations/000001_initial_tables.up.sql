@@ -31,10 +31,11 @@ CREATE TABLE IF NOT EXISTS  address(
         references person (id) on delete cascade
 );
 
-SELECT * FROM person,gender,address
-WHERE person.id = gender.person_id AND person.id = address.person_id;
+
+
 
 SELECT (person.id,person.firstname,person.lastname,person.age,gender.gender,gender.probability,address.country_code,address.probability)
     FROM person
     JOIN  address on person.id = address.person_id
     JOIN  gender  on person.id = gender.person_id;
+

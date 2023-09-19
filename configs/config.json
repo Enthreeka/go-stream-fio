@@ -7,7 +7,7 @@
   },
 
   "postgres": {
-    "url": "postgres://postgres:1234@localhost:5432/fio"
+    "url": "postgres://root:postgres@localhost:5435/fio"
   },
 
   "redis":{

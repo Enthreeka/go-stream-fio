@@ -3,7 +3,6 @@ version: '3'
 services:
 
   broker:
-
     image: confluentinc/cp-kafka:7.5.0
     container_name: broker
     ports:
@@ -29,3 +28,23 @@ services:
     image: redis
     ports:
       - "6379:6379"
+
+  db:
+    image: postgres:15.2
+    restart: always
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=root
+      - POSTGRES_DB=fio
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

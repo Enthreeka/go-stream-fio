@@ -8,6 +8,7 @@ import (
 
 type User interface {
 	CreateUser(ctx context.Context, fio *dto.FioRequest) error
+	CreatePerson(ctx context.Context, user *entity.User) error
 	FilteredUser(ctx context.Context, name string) ([]entity.User, error)
 	DeleteUser(ctx context.Context, id string) error
 }

@@ -33,6 +33,20 @@ func (u *userRepoRedis) Create(ctx context.Context, user *entity.User) error {
 	return nil
 }
 
+func (u *userRepoRedis) CreatePerson(ctx context.Context, user *entity.User) error {
+	bytesUser, err := json.Marshal(user)
+	if err != nil {
+		return err
+	}
+
+	err = u.Rds.Set(ctx, user.ID, bytesUser, 360*time.Hour).Err()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (u *userRepoRedis) GetByID(ctx context.Context, id string) (*entity.User, error) {
 	user := new(entity.User)
 

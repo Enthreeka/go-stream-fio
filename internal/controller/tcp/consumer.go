@@ -46,19 +46,19 @@ func (c *consumerKafka) Read(ctx context.Context) error {
 		err = json.Unmarshal(msg.Value, fio)
 		if err != nil {
 			c.log.Error("failed to encode dto.FIO: %v", err)
-			continue
+			return err
 		}
 
 		c.log.Info("get fio: [%v]", fio)
 
 		if !dto.IsRequiredField(fio) {
 			c.log.Error("%v", apperror.ErrFIOFailed)
-			continue
+			return apperror.ErrFIOFailed
 		}
 
 		if !dto.IsNumberInFIO(fio) {
 			c.log.Error("%v", apperror.ErrFIOFailed)
-			continue
+			return apperror.ErrFIOFailed
 		}
 
 		err = c.userUsecase.CreateUser(context.Background(), fio)

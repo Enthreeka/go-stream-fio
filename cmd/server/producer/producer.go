@@ -9,15 +9,7 @@ import (
 )
 
 func main() {
-	//kafkaConn, err := kafkaClient.New(context.Background())
-	//if err != nil {
-	//	log.Error("failed to connect kafka: %v", err)
-	//}
-
 	log := logger.New()
-
-	//ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	//defer cancel()
 
 	producer := tcp.NewProducerKafka(log)
 
