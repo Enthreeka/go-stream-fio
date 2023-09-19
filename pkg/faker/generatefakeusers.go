@@ -46,18 +46,7 @@ func generateFakeData(count int) Data {
 		"Denisov", "Zuev", "Fomin", "Gusev", "Tikhonov",
 	}
 
-	countryCodes := []string{
-		"AZ",
-		"AM",
-		"BY",
-		"KZ",
-		"KG",
-		"MD",
-		"RU",
-		"TJ",
-		"TM",
-		"UZ",
-	}
+	countryCodes := []string{"AZ", "AM", "BY", "KZ", "KG", "MD", "RU", "TJ", "TM", "UZ"}
 
 	var fakeUsers []FakeUser
 	for i := 0; i < count; i++ {
